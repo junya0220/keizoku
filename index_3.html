@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>継続は力なり</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-50: #E1F5EE;
+  --green-100: #9FE1CB;
+  --green-200: #5DCAA5;
+  --green-400: #1D9E75;
+  --green-600: #0F6E56;
+  --green-800: #085041;
+  --amber: #BA7517;
+  --amber-light: #FAEEDA;
+  --blue: #185FA5;
+  --blue-light: #E6F1FB;
+  --bg: #FAFAF8;
+  --bg2: #F2F0EB;
+  --bg3: #FFFFFF;
+  --text: #1C1C1A;
+  --text2: #5F5E5A;
+  --text3: #9B9A96;
+  --border: rgba(0,0,0,0.1);
+  --border2: rgba(0,0,0,0.07);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141412;
+    --bg2: #1E1E1A;
+    --bg3: #252520;
+    --text: #F0EEE8;
+    --text2: #A8A69E;
+    --text3: #6B6960;
+    --border: rgba(255,255,255,0.1);
+    --border2: rgba(255,255,255,0.06);
+    --green-50: #0A2E22;
+    --green-100: #0D4A36;
+    --blue-light: #0A1F3A;
+    --amber-light: #2A1E08;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; min-height: 100vh; }
+.app { max-width: 480px; margin: 0 auto; padding-bottom: 3rem; }
+
+/* ヘッダー */
+.hero { padding: 2rem 1.25rem 1.5rem; text-align: center; border-bottom: 1px solid var(--border2); }
+.logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
+.logo-bars { display: flex; align-items: flex-end; gap: 3px; height: 32px; }
+.logo-bar { width: 6px; border-radius: 3px; }
+.site-title { font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
+.site-title em { color: var(--green-400); font-style: normal; }
+.site-sub { font-size: 12px; color: var(--text3); letter-spacing: 0.08em; }
+.date-str { font-size: 13px; color: var(--text2); margin-top: 10px; }
+
+/* ステータスカード */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; padding: 1.25rem 1.25rem 0; }
+.stat { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px 8px; text-align: center; box-shadow: var(--shadow); }
+.stat-val { font-size: 24px; font-weight: 700; line-height: 1; }
+.stat-val.fire { color: var(--amber); }
+.stat-val.blue { color: var(--blue); }
+.stat-val.green { color: var(--green-400); }
+.stat-lbl { font-size: 10px; color: var(--text3); margin-top: 4px; }
+
+/* セクション共通 */
+.section { padding: 1.25rem 1.25rem 0; }
+.section-title { font-size: 12px; font-weight: 700; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+
+/* XPエリア */
+.xp-card { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.xp-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.xp-lv { font-size: 14px; font-weight: 700; color: var(--text); }
+.xp-pts { font-size: 12px; color: var(--text3); }
+.xp-track { background: var(--bg2); border-radius: 99px; height: 8px; overflow: hidden; margin-bottom: 10px; }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--green-200), var(--green-800)); border-radius: 99px; transition: width 0.6s ease; }
+.badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; }
+.badge-off { background: var(--bg2); color: var(--text3); }
+.badge-on { background: var(--amber-light); color: var(--amber); }
+
+/* 草グラフ */
+.grass-wrap { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.legend { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text3); }
+.legend-dot { width: 11px; height: 11px; border-radius: 2px; }
+.grass-scroll { overflow-x: auto; }
+.grass-inner { display: flex; gap: 3px; width: max-content; }
+.grass-col { display: flex; flex-direction: column; gap: 3px; }
+.grass-cell { width: 13px; height: 13px; border-radius: 2px; cursor: pointer; transition: opacity 0.1s; }
+.grass-cell:hover { opacity: 0.7; }
+.grass-cell.today { outline: 2px solid var(--green-400); outline-offset: 1px; }
+.grass-tip { font-size: 11px; color: var(--text3); margin-top: 6px; min-height: 16px; }
+
+/* 週ストリーク */
+.week-scroll { overflow-x: auto; }
+.week-chips { display: flex; gap: 6px; width: max-content; padding-bottom: 2px; }
+.wchip { min-width: 52px; border-radius: var(--radius-sm); padding: 8px 6px; text-align: center; border: 1px solid var(--border); background: var(--bg3); box-shadow: var(--shadow); }
+.wchip.cleared { background: var(--green-50); border-color: var(--green-400); }
+.wchip.current { border: 2px solid var(--amber); }
+.wchip.current.cleared { border: 2px solid var(--green-400); }
+.wchip-lbl { font-size: 10px; color: var(--text3); }
+.wchip.cleared .wchip-lbl { color: var(--green-400); }
+.wchip.current .wchip-lbl { color: var(--amber); }
+.wchip.current.cleared .wchip-lbl { color: var(--green-400); }
+.wchip-val { font-size: 12px; font-weight: 700; color: var(--text2); margin-top: 2px; }
+.wchip.cleared .wchip-val { color: var(--green-600); }
+
+/* 今日の進捗 */
+.progress-card { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.progress-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.progress-lbl { font-size: 13px; color: var(--text2); }
+.progress-cnt { font-size: 20px; font-weight: 700; color: var(--text); }
+.progress-track { background: var(--bg2); border-radius: 99px; height: 8px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; transition: width 0.4s, background 0.4s; }
+
+/* タブ */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab { padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--bg3); color: var(--text2); letter-spacing: 0.03em; transition: all 0.15s; }
+.tab:hover { background: var(--bg2); }
+.tab.active { background: var(--green-400); color: white; border-color: var(--green-400); }
+
+/* 習慣カード */
+.habit-list { display: flex; flex-direction: column; gap: 8px; }
+.habit-card { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: background 0.15s; box-shadow: var(--shadow); }
+.habit-card:hover { background: var(--bg2); }
+.habit-card.done { border-color: var(--green-400); background: var(--green-50); }
+.card-top { display: flex; align-items: center; gap: 12px; }
+.chk { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; color: transparent; transition: all 0.15s; }
+.habit-card.done .chk { background: var(--green-400); border-color: var(--green-400); color: white; }
+.hinfo { flex: 1; min-width: 0; }
+.hname { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.habit-card.done .hname { color: var(--green-600); }
+.hsub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.habit-card.done .hsub { color: var(--green-400); }
+.hbadge { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+.hbadge-daily { background: var(--blue-light); color: var(--blue); }
+.hbadge-weekly { background: var(--amber-light); color: var(--amber); }
+.hbadge-weekly-done { background: var(--green-50); color: var(--green-600); }
+.wdots { display: flex; gap: 4px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border2); align-items: center; }
+.wdot { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); font-size: 10px; display: flex; align-items: center; justify-content: center; color: var(--text3); }
+.wdot.done { background: var(--green-400); border-color: var(--green-400); color: white; }
+.wprog { font-size: 11px; color: var(--text2); margin-left: auto; font-weight: 700; }
+.del-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--text3); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+.del-btn:hover { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+
+/* 完了バナー */
+.complete-banner { background: var(--green-50); border: 1px solid var(--green-400); border-radius: var(--radius); padding: 12px; text-align: center; font-size: 14px; font-weight: 700; color: var(--green-600); display: none; }
+
+/* 追加ボタン */
+.add-area { background: var(--bg3); border: 2px dashed var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.add-input { flex: 1; min-width: 160px; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-size: 13px; font-family: inherit; outline: none; }
+.add-input:focus { border-color: var(--green-400); }
+.add-select { padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-size: 13px; font-family: inherit; outline: none; cursor: pointer; }
+.add-select:focus { border-color: var(--green-400); }
+.add-btn { padding: 10px 20px; border-radius: var(--radius-sm); border: none; background: var(--green-400); color: white; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s; white-space: nowrap; }
+.add-btn:hover { background: var(--green-600); }
+.add-hint { font-size: 11px; color: var(--text3); text-align: center; }
+
+/* 日付選択 */
+.date-tabs { display: flex; gap: 6px; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 2px; }
+.date-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--bg3); color: var(--text2); transition: all 0.15s; white-space: nowrap; }
+.date-tab:hover { background: var(--bg2); }
+.date-tab.active { background: var(--green-400); color: white; border-color: var(--green-400); }
+.date-tab.past { border-style: dashed; }
+.past-note { font-size: 11px; color: var(--amber); background: var(--amber-light); border-radius: var(--radius-sm); padding: 8px 12px; margin-bottom: 1rem; text-align: center; display: none; }
+/* リセット通知 */
+.reset-note { font-size: 11px; color: var(--text3); text-align: center; padding: 0.5rem 1.25rem; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hero">
+    <div class="logo">
+      <div class="logo-bars">
+        <div class="logo-bar" style="height:10px;background:#9FE1CB"></div>
+        <div class="logo-bar" style="height:16px;background:#5DCAA5"></div>
+        <div class="logo-bar" style="height:22px;background:#1D9E75"></div>
+        <div class="logo-bar" style="height:28px;background:#0F6E56"></div>
+        <div class="logo-bar" style="height:32px;background:#085041"></div>
+      </div>
+      <div class="site-title"><em>継続</em>は力なり</div>
+    </div>
+    <div class="site-sub">KEIZOKU WA CHIKARA NARI</div>
+    <div class="date-str" id="date-str"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-val fire" id="s-day">0日</div><div class="stat-lbl">毎日ストリーク</div></div>
+    <div class="stat"><div class="stat-val blue" id="s-week">0週</div><div class="stat-lbl">週ストリーク</div></div>
+    <div class="stat"><div class="stat-val green" id="s-rate">0%</div><div class="stat-lbl">今日の達成率</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">経験値・レベル</div>
+    <div class="xp-card">
+      <div class="xp-head"><span class="xp-lv" id="xp-lv">Lv.1 はじめの一歩</span><span class="xp-pts" id="xp-pts">0 / 100 XP</span></div>
+      <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+      <div class="badges" id="badges"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">達成カレンダー</div>
+    <div class="grass-wrap">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#E8E6E0"></div>なし</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9FE1CB"></div>〜49%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#5DCAA5"></div>50〜79%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>80%以上</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#085041"></div>週次も達成</div>
+      </div>
+      <div class="grass-scroll"><div class="grass-inner" id="grass-inner"></div></div>
+      <div class="grass-tip" id="grass-tip">マスにカーソルを当てると詳細が表示されます</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">週ストリーク履歴</div>
+    <div class="week-scroll"><div class="week-chips" id="week-chips"></div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">今日の進捗</div>
+    <div class="progress-card">
+      <div class="progress-head"><span class="progress-lbl">毎日習慣の達成率</span><span class="progress-cnt" id="prog-cnt">0 / 0</span></div>
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="complete-banner" id="complete-banner">今日の習慣をすべて達成！すばらしい</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title" style="margin-bottom:8px">習慣チェック</div>
+    <div class="date-tabs" id="date-tabs"></div>
+    <div class="past-note" id="past-note">過去の日付を編集しています。記録し忘れた習慣を入力できます。</div>
+    <div class="tabs" id="tabs" style="margin-bottom:1rem">
+      <button class="tab active" onclick="setTab('all',this)">すべて</button>
+      <button class="tab" onclick="setTab('daily',this)">毎日</button>
+      <button class="tab" onclick="setTab('weekly',this)">週次</button>
+      <button class="tab" onclick="setTab('health',this)">健康</button>
+      <button class="tab" onclick="setTab('study',this)">学習</button>
+    </div>
+    <div class="habit-list" id="habit-list"></div>
+  </div>
+
+  <div class="section" style="margin-top:1rem">
+    <div class="section-title">習慣を追加する</div>
+    <div class="add-area">
+      <div class="add-row">
+        <input class="add-input" id="add-name" placeholder="習慣の名前（例：朝の読書）" maxlength="30">
+        <select class="add-select" id="add-tag">
+          <option value="study">学習</option>
+          <option value="health">健康</option>
+        </select>
+      </div>
+      <div class="add-row">
+        <select class="add-select" id="add-freq">
+          <option value="daily">毎日</option>
+          <option value="weekly">週次</option>
+        </select>
+        <select class="add-select" id="add-target" style="display:none">
+          <option value="1">週1回</option>
+          <option value="2">週2回</option>
+          <option value="3">週3回</option>
+          <option value="4">週4回</option>
+        </select>
+        <button class="add-btn" onclick="addHabit()">追加する</button>
+      </div>
+      <div class="add-hint">習慣は右の × ボタンで削除できます</div>
+    </div>
+  </div>
+
+  <div class="reset-note" id="reset-note"></div>
+
+</div>
+
+<script>
+const DAYS = ["日","月","火","水","木","金","土"];
+const GRASS_COLORS = ["#E8E6E0","#9FE1CB","#5DCAA5","#1D9E75","#085041"];
+const LEVELS = [
+  {lv:1, name:"はじめの一歩", xp:0},
+  {lv:2, name:"習慣の芽",     xp:100},
+  {lv:3, name:"継続の力",     xp:300},
+  {lv:4, name:"習慣マスター", xp:700},
+  {lv:5, name:"伝説の継続者", xp:1500},
+];
+const BADGES = [
+  {id:"3s",  label:"3日連続",   cond:(d,w,r)=>d>=3},
+  {id:"7s",  label:"7日連続",   cond:(d,w,r)=>d>=7},
+  {id:"30s", label:"30日達成",  cond:(d,w,r)=>d>=30},
+  {id:"4w",  label:"4週連続",   cond:(d,w,r)=>w>=4},
+  {id:"pf",  label:"完璧な1日", cond:(d,w,r)=>r===100},
+];
+const DEFAULT_HABITS = [
+  {id:"h1", name:"朝30分の読書",        sub:"毎朝 7:00",   freq:"daily",  tag:"study",  checked:false},
+  {id:"h2", name:"英単語10個を暗記",    sub:"毎日 12:00",  freq:"daily",  tag:"study",  checked:false},
+  {id:"h3", name:"振り返り日記を書く",  sub:"毎晩 21:00",  freq:"daily",  tag:"study",  checked:false},
+  {id:"h4", name:"水を2リットル飲む",   sub:"一日中",      freq:"daily",  tag:"health", checked:false},
+  {id:"h5", name:"朝10分のストレッチ",  sub:"毎朝 6:30",   freq:"daily",  tag:"health", checked:false},
+  {id:"h6", name:"瞑想・深呼吸（5分）",sub:"毎朝 7:00",   freq:"daily",  tag:"health", checked:false},
+  {id:"h7", name:"22時以降スマホを見ない",sub:"毎晩 22:00",freq:"daily",  tag:"health", checked:false},
+  {id:"h8", name:"感謝日記を3行書く",   sub:"毎晩 21:30",  freq:"daily",  tag:"health", checked:false},
+  {id:"h9", name:"7時間以上の睡眠を記録",sub:"毎朝",       freq:"daily",  tag:"health", checked:false},
+  {id:"h10",name:"筋トレ30分",          sub:"週2回",       freq:"weekly", tag:"health", weekDone:[0,0,0,0,0,0,0], weekTarget:2},
+  {id:"h11",name:"まとめノートを作る",  sub:"週2回",       freq:"weekly", tag:"study",  weekDone:[0,0,0,0,0,0,0], weekTarget:2},
+  {id:"h12",name:"オンライン勉強会に参加",sub:"週1回",     freq:"weekly", tag:"study",  weekDone:[0,0,0,0,0,0,0], weekTarget:1},
+];
+
+const today = new Date();
+const todayStr = today.toISOString().slice(0,10);
+const todayDow = today.getDay();
+let selectedDateOffset = 0; // 0=今日, 1=1日前, 2=2日前, 3=3日前
+
+function getSelectedDate() {
+  const d = new Date(today); d.setDate(d.getDate() - selectedDateOffset);
+  return d;
+}
+function getSelectedDateStr() {
+  return getSelectedDate().toISOString().slice(0,10);
+}
+function getSelectedDow() {
+  return getSelectedDate().getDay();
+}
+
+// --- ローカルストレージ管理 ---
+function load(key, def) {
+  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; } catch(e) { return def; }
+}
+function save(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+}
+
+// 習慣データ
+let habits = load("habits_v1", DEFAULT_HABITS);
+
+// 毎日リセット — 前回アクセス日が今日と違う場合、daily習慣のcheckedをリセット
+let lastDate = load("last_date", "");
+if (lastDate !== todayStr) {
+  habits.forEach(h => {
+    if (h.freq === "daily") h.checked = false;
+  });
+  // 週が変わった場合はweekDoneもリセット（月曜日判定）
+  if (lastDate) {
+    const last = new Date(lastDate);
+    const lastWeek = getWeekId(last);
+    const thisWeek = getWeekId(today);
+    if (lastWeek !== thisWeek) {
+      // 先週の達成状況をweekHistoryに保存
+      const weeklyHabits = habits.filter(h => h.freq === "weekly");
+      const cleared = weeklyHabits.every(h => (h.weekDone||[]).filter(Boolean).length >= h.weekTarget);
+      let history = load("week_history", []);
+      history.push({ week: lastWeek, cleared });
+      if (history.length > 12) history = history.slice(-12);
+      save("week_history", history);
+      // weekDoneをリセット
+      habits.forEach(h => { if (h.freq === "weekly") h.weekDone = [0,0,0,0,0,0,0]; });
+    }
+  }
+  save("last_date", todayStr);
+  save("habits_v1", habits);
+}
+
+// 過去データ（草グラフ用）
+let grassHistory = load("grass_history", generateInitialGrassHistory());
+// 今日分を更新
+function updateTodayGrass() {
+  const rate = getDailyRate();
+  const wDone = isWeeklyAllDone();
+  // 今週の草を全部更新
+  const weekId = getWeekId(today);
+  grassHistory = grassHistory.map(d => d.weekId === weekId ? {...d, weeklyDone: wDone} : d);
+  // 今日を更新
+  const idx = grassHistory.findIndex(d => d.date === todayStr);
+  if (idx >= 0) grassHistory[idx].rate = rate;
+  else grassHistory.push({ date: todayStr, rate, weeklyDone: wDone, weekId });
+  save("grass_history", grassHistory);
+}
+
+function getWeekId(d) {
+  const tmp = new Date(d);
+  tmp.setHours(0,0,0,0);
+  tmp.setDate(tmp.getDate() - tmp.getDay()); // 週の日曜日に揃える
+  return tmp.toISOString().slice(0,10);
+}
+
+function generateInitialGrassHistory() {
+  return [];
+}
+
+// 過去日付のdailyチェック状態（dateStr -> {habitId: bool}）
+function loadPastChecks(dateStr) {
+  return load("past_checks_" + dateStr, {});
+}
+function savePastChecks(dateStr, data) {
+  save("past_checks_" + dateStr, data);
+}
+function getPastCheck(dateStr, habitId) {
+  if (dateStr === todayStr) return habits.find(h => h.id === habitId)?.checked || false;
+  const checks = loadPastChecks(dateStr);
+  return checks[habitId] || false;
+}
+function setPastCheck(dateStr, habitId, val) {
+  if (dateStr === todayStr) {
+    const h = habits.find(h => h.id === habitId);
+    if (h) { h.checked = val; save("habits_v1", habits); }
+  } else {
+    const checks = loadPastChecks(dateStr);
+    checks[habitId] = val;
+    savePastChecks(dateStr, checks);
+  }
+}
+function getPastDailyRate(dateStr) {
+  const daily = habits.filter(h => h.freq === "daily");
+  if (!daily.length) return 0;
+  const n = daily.filter(h => getPastCheck(dateStr, h.id)).length;
+  return Math.round(n / daily.length * 100);
+}
+
+function getDailyRate() {
+  return getPastDailyRate(getSelectedDateStr());
+}
+
+function isWeeklyAllDone() {
+  const w = habits.filter(h => h.freq === "weekly");
+  if (!w.length) return false;
+  return w.every(h => (h.weekDone||[]).filter(Boolean).length >= h.weekTarget);
+}
+
+function rateToLevel(rate, wDone) {
+  if (rate === 0) return 0;
+  if (rate < 50) return 1;
+  if (rate < 80) return 2;
+  return wDone ? 4 : 3;
+}
+
+function calcDayStreak() {
+  let s = 0;
+  for (let i = 1; i <= 365; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const ds = d.toISOString().slice(0,10);
+    const entry = grassHistory.find(g => g.date === ds);
+    if (entry && entry.rate >= 80) s++;
+    else break;
+  }
+  return s;
+}
+
+function calcWeekStreak() {
+  let history = load("week_history", []);
+  let s = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].cleared) s++; else break;
+  }
+  if (isWeeklyAllDone()) s++;
+  return s;
+}
+
+function calcTotalXP() {
+  const ds = calcDayStreak();
+  const ws = calcWeekStreak();
+  const rate = getDailyRate();
+  return ds * 10 + ws * 50 + Math.floor(rate / 10) * 5;
+}
+
+// --- 表示更新 ---
+function buildDateTabs() {
+  const container = document.getElementById("date-tabs");
+  container.innerHTML = "";
+  for (let i = 0; i <= 3; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const btn = document.createElement("button");
+    btn.className = "date-tab" + (i === 0 ? " active" : " past") + (i === selectedDateOffset ? " active" : "");
+    const label = i === 0 ? "今日" : i === 1 ? "昨日" : i + "日前";
+    btn.textContent = label + "（" + (d.getMonth()+1) + "/" + d.getDate() + "）";
+    btn.addEventListener("click", () => {
+      selectedDateOffset = i;
+      document.querySelectorAll(".date-tab").forEach(t => t.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("past-note").style.display = i > 0 ? "block" : "none";
+      renderHabits();
+      updateProgress();
+    });
+    container.appendChild(btn);
+  }
+}
+
+function updateHeader() {
+  const d = today;
+  document.getElementById("date-str").textContent =
+    d.getFullYear() + "年" + (d.getMonth()+1) + "月" + d.getDate() + "日（" + DAYS[d.getDay()] + "）";
+}
+
+function updateStats() {
+  const rate = getDailyRate();
+  const ds = calcDayStreak();
+  const ws = calcWeekStreak();
+  document.getElementById("s-day").textContent = ds + "日";
+  document.getElementById("s-week").textContent = ws + "週";
+  document.getElementById("s-rate").textContent = rate + "%";
+
+  // XP
+  const xp = calcTotalXP();
+  let li = 0;
+  for (let i = 0; i < LEVELS.length - 1; i++) { if (xp >= LEVELS[i+1].xp) li = i+1; }
+  const cur = LEVELS[li], nxt = LEVELS[Math.min(li+1, LEVELS.length-1)];
+  const xpIn = xp - cur.xp, xpRange = (nxt.xp - cur.xp) || 1;
+  document.getElementById("xp-lv").textContent = "Lv." + cur.lv + " " + cur.name;
+  document.getElementById("xp-pts").textContent = xpIn + " / " + xpRange + " XP";
+  document.getElementById("xp-fill").style.width = Math.min(Math.round(xpIn/xpRange*100), 100) + "%";
+
+  // バッジ
+  const br = document.getElementById("badges"); br.innerHTML = "";
+  BADGES.forEach(b => {
+    const el = document.createElement("span");
+    el.className = "badge " + (b.cond(ds, ws, rate) ? "badge-on" : "badge-off");
+    el.textContent = b.label;
+    br.appendChild(el);
+  });
+}
+
+function buildGrass() {
+  const inner = document.getElementById("grass-inner"); inner.innerHTML = "";
+  const weeklyNow = isWeeklyAllDone();
+  const todayRate = getDailyRate();
+  const weekId = getWeekId(today);
+
+  for (let col = 0; col < 16; col++) {
+    const colEl = document.createElement("div"); colEl.className = "grass-col";
+    for (let row = 0; row < 7; row++) {
+      const daysAgo = (15 - col) * 7 + (6 - row);
+      const cell = document.createElement("div"); cell.className = "grass-cell";
+      const d = new Date(today); d.setDate(d.getDate() - daysAgo);
+      const ds = d.toISOString().slice(0,10);
+      const isToday = daysAgo === 0;
+
+      let rate = 0, wDone = false;
+      if (isToday) {
+        rate = todayRate; wDone = weeklyNow; cell.classList.add("today");
+      } else {
+        const entry = grassHistory.find(g => g.date === ds);
+        if (entry) { rate = entry.rate; wDone = entry.weeklyDone; }
+      }
+
+      const lv = rateToLevel(rate, wDone);
+      cell.style.background = GRASS_COLORS[lv];
+      const lbl = (d.getMonth()+1) + "/" + d.getDate() + "（" + DAYS[d.getDay()] + "）";
+      cell.addEventListener("mouseenter", () => {
+        document.getElementById("grass-tip").innerHTML = isToday
+          ? "<strong>今日</strong> — 毎日 " + rate + "%" + (wDone ? "、週次達成 → <span style='color:#1D9E75'>Lv4</span>" : " → <span style='color:#BA7517'>Lv" + lv + "</span>")
+          : "<strong>" + lbl + "</strong> — 毎日 " + rate + "%" + (wDone ? "、週次達成 → <span style='color:#1D9E75'>Lv4</span>" : " → Lv" + lv);
+      });
+      colEl.appendChild(cell);
+    }
+    inner.appendChild(colEl);
+  }
+  inner.scrollLeft = inner.scrollWidth;
+}
+
+function updateTodayGrassCell() {
+  const todayCell = document.querySelector(".grass-cell.today");
+  if (!todayCell) return;
+  todayCell.style.background = GRASS_COLORS[rateToLevel(getDailyRate(), isWeeklyAllDone())];
+}
+
+function buildWeekChips() {
+  const history = load("week_history", []);
+  const row = document.getElementById("week-chips"); row.innerHTML = "";
+  const total = 12;
+  const allChips = [...history.slice(-11), { week: getWeekId(today), cleared: isWeeklyAllDone(), isCurrent: true }];
+  const pad = total - allChips.length;
+  for (let i = 0; i < pad; i++) {
+    const chip = document.createElement("div"); chip.className = "wchip";
+    chip.innerHTML = `<div class="wchip-lbl">-</div><div class="wchip-val">-</div>`;
+    row.appendChild(chip);
+  }
+  allChips.forEach((w, idx) => {
+    const isCur = w.isCurrent;
+    const chip = document.createElement("div");
+    chip.className = "wchip" + (w.cleared ? " cleared" : "") + (isCur ? " current" : "");
+    const label = isCur ? "今週" : (allChips.length - idx) + "週前";
+    chip.innerHTML = `<div class="wchip-lbl">${label}</div><div class="wchip-val">${w.cleared ? "達成" : "未達"}</div>`;
+    row.appendChild(chip);
+  });
+  row.scrollLeft = row.scrollWidth;
+}
+
+function updateWeekChip() {
+  const chip = document.querySelector(".wchip.current");
+  if (!chip) return;
+  const cleared = isWeeklyAllDone();
+  chip.className = "wchip current" + (cleared ? " cleared" : "");
+  chip.querySelector(".wchip-val").textContent = cleared ? "達成" : "未達";
+}
+
+function updateProgress() {
+  const dateStr = getSelectedDateStr();
+  const daily = habits.filter(h => h.freq === "daily");
+  const n = daily.filter(h => getPastCheck(dateStr, h.id)).length;
+  const rate = daily.length ? Math.round(n / daily.length * 100) : 0;
+  document.getElementById("prog-cnt").textContent = n + " / " + daily.length;
+  const color = rate >= 80 ? "#085041" : rate >= 50 ? "#1D9E75" : "#5DCAA5";
+  document.getElementById("prog-fill").style.width = rate + "%";
+  document.getElementById("prog-fill").style.background = color;
+  const isToday = selectedDateOffset === 0;
+  document.getElementById("complete-banner").style.display = (isToday && n === daily.length && n > 0) ? "block" : "none";
+}
+
+let currentTab = "all";
+function setTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  renderHabits();
+}
+
+function renderHabits() {
+  const dateStr = getSelectedDateStr();
+  const dow = getSelectedDow();
+  const isPast = selectedDateOffset > 0;
+
+  let filtered = habits;
+  if (currentTab === "daily")  filtered = habits.filter(h => h.freq === "daily");
+  if (currentTab === "weekly") filtered = habits.filter(h => h.freq === "weekly");
+  if (currentTab === "health") filtered = habits.filter(h => h.tag === "health");
+  if (currentTab === "study")  filtered = habits.filter(h => h.tag === "study");
+
+  const list = document.getElementById("habit-list"); list.innerHTML = "";
+  if (!filtered.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">習慣がありません</div>';
+    return;
+  }
+
+  filtered.forEach(h => {
+    const isW = h.freq === "weekly";
+    const wCnt = isW ? (h.weekDone||[]).filter(Boolean).length : 0;
+    const wCleared = isW && wCnt >= h.weekTarget;
+    const isChecked = isW ? (h.weekDone||[])[dow] : getPastCheck(dateStr, h.id);
+
+    const card = document.createElement("div");
+    card.className = "habit-card" + ((isChecked || wCleared) ? " done" : "");
+
+    let dots = "";
+    if (isW) {
+      const ds2 = (h.weekDone||[]).map((d2, i) => {
+        const dd = new Date(today); dd.setDate(dd.getDate() - (todayDow - i));
+        return `<div class="wdot${d2 ? " done" : ""}">${DAYS[dd.getDay()]}</div>`;
+      }).join("");
+      dots = `<div class="wdots">${ds2}<span class="wprog">${wCleared ? "今週クリア！" : wCnt + "/" + h.weekTarget + "回"}</span></div>`;
+    }
+
+    const badge = isW
+      ? `<span class="hbadge ${wCleared ? "hbadge-weekly-done" : "hbadge-weekly"}">${wCleared ? "達成！" : "週" + h.weekTarget + "回"}</span>`
+      : `<span class="hbadge hbadge-daily">毎日</span>`;
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="chk">${(isChecked || wCleared) ? "✓" : ""}</div>
+        <div class="hinfo">
+          <div class="hname">${h.name}</div>
+          <div class="hsub">${(isChecked || wCleared) ? (wCleared ? "今週クリア！" : "完了！") : h.sub}</div>
+        </div>
+        ${badge}
+        ${!isPast ? `<button class="del-btn" title="削除">×</button>` : ""}
+      </div>
+      ${dots}
+    `;
+
+    if (!isPast) {
+      card.querySelector(".del-btn").addEventListener("click", e => {
+        e.stopPropagation();
+        if (confirm("「" + h.name + "」を削除しますか？")) {
+          habits = habits.filter(x => x.id !== h.id);
+          save("habits_v1", habits);
+          fullUpdate();
+        }
+      });
+    }
+
+    card.addEventListener("click", () => {
+      if (isW) {
+        if (!h.weekDone) h.weekDone = [0,0,0,0,0,0,0];
+        h.weekDone[dow] = h.weekDone[dow] ? 0 : 1;
+        save("habits_v1", habits);
+      } else {
+        setPastCheck(dateStr, h.id, !isChecked);
+      }
+      // 草グラフの該当日を更新
+      const rate = getPastDailyRate(dateStr);
+      const wId = getWeekId(getSelectedDate());
+      const wDone = isWeeklyAllDone();
+      const idx = grassHistory.findIndex(g => g.date === dateStr);
+      if (idx >= 0) { grassHistory[idx].rate = rate; grassHistory[idx].weeklyDone = wDone; }
+      else grassHistory.push({ date: dateStr, rate, weeklyDone: wDone, weekId: wId });
+      save("grass_history", grassHistory);
+      buildGrass();
+      renderHabits();
+      updateStats();
+      updateProgress();
+    });
+
+    list.appendChild(card);
+  });
+}
+
+function addHabit() {
+  const name = document.getElementById("add-name").value.trim();
+  if (!name) { alert("習慣の名前を入力してください"); return; }
+  const freq = document.getElementById("add-freq").value;
+  const tag  = document.getElementById("add-tag").value;
+  const target = parseInt(document.getElementById("add-target").value || "1");
+  const id = "h" + Date.now();
+  const newH = { id, name, sub: freq === "daily" ? "毎日" : "週" + target + "回", freq, tag, checked: false };
+  if (freq === "weekly") { newH.weekDone = [0,0,0,0,0,0,0]; newH.weekTarget = target; }
+  habits.push(newH);
+  save("habits_v1", habits);
+  document.getElementById("add-name").value = "";
+  fullUpdate();
+}
+
+// 頻度変更でweekTarget選択を表示
+document.getElementById("add-freq").addEventListener("change", function() {
+  document.getElementById("add-target").style.display = this.value === "weekly" ? "" : "none";
+});
+
+// Enterキーで追加
+document.getElementById("add-name").addEventListener("keydown", e => { if (e.key === "Enter") addHabit(); });
+
+function fullUpdate() {
+  updateTodayGrass();
+  updateStats();
+  updateTodayGrassCell();
+  updateWeekChip();
+  updateProgress();
+  renderHabits();
+  // リセット日時を表示
+  const next = new Date(today); next.setDate(next.getDate() + 1); next.setHours(0,0,0,0);
+  document.getElementById("reset-note").textContent = "毎日の習慣は次の日付変更（" + (next.getMonth()+1) + "/" + next.getDate() + " 0:00）にリセットされます";
+}
+
+// 初回ビルド
+updateHeader();
+buildDateTabs();
+buildGrass();
+buildWeekChips();
+fullUpdate();
+</script>
+</body>
+</html>
